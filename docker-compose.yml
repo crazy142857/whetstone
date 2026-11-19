@@ -12,7 +12,7 @@ services:
       - "127.0.0.1:${WEB_PORT:-3008}:3000"
 
   cloudflared:
-    image: cloudflare/cloudflared:latest
+    image: cloudflare/cloudflared:2026.11.0
     restart: unless-stopped
     command: tunnel --no-autoupdate run
     environment:
