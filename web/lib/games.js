@@ -5,7 +5,7 @@ export const SECTIONS = [
   {
     title: "AI security",
     blurb:
-      "Using AI at work safely: what it reads, what you paste into it, and what you let it do. Start with Spot the Injection; the field guide collects every lesson.",
+      "Using AI at work safely: what it reads, what you paste into it, and what you let it do. Start with Spot the Injection, or try to talk a bot out of a secret in Crack the Codename. The field guide collects every lesson.",
     games: [
       {
         slug: "injection",
@@ -32,6 +32,15 @@ export const SECTIONS = [
         skill: "AI security",
         blurb:
           "An AI agent wants to run a command, send an email or make a payment. Allow it, ask first, or block it?",
+        status: "live",
+      },
+      {
+        slug: "codename",
+        href: "/codename",
+        name: "Crack the Codename",
+        skill: "AI security",
+        blurb:
+          "Penny the helpdesk bot is guarding a secret project's name. Talk her out of it across six levels of defences, and learn why each one falls.",
         status: "live",
       },
     ],

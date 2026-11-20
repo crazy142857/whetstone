@@ -1,6 +1,6 @@
 {
   "name": "whetstone",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +9,7 @@
     "start": "next start -p 3008",
     "lint": "eslint . --max-warnings=0",
     "audit": "npm audit --audit-level=high",
-    "test": "node --test tests/unit.test.mjs tests/security.test.mjs",
+    "test": "node --test tests/unit.test.mjs tests/security.test.mjs tests/codename.test.mjs",
     "test:unit": "node --test tests/unit.test.mjs",
     "test:e2e": "node tests/e2e.mjs"
   },

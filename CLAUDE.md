@@ -50,6 +50,20 @@ separate app and repo; don't share code between them. Original games only.
   Leak Check prompts mark spans as `[[n|text]]`; each word is clickable
   so a span's boundaries aren't given away. History is per game in
   localStorage (`whetstone:<slug>:games`).
+- **Crack the Codename (v0.3.0)** is a chat game, not a deck: six levels,
+  each adding a defence (`lib/codename/levels.js`). Penny is a **simulated**
+  bot (`simBot` in `lib/codename/engine.js`): pattern matching in
+  `lib/codename/detect.js` decides which trick a message uses, and she falls
+  for all of them; the guards (input word list, trick spotter, conversation
+  monitor, output filter) make levels hard. Ivan chose simulated only for
+  now (2026-11-20): no API key, no cost. A live mode would swap only the
+  bot step (`respond({ bot })`) for a server route calling a cheap model
+  with the level's `systemPrompt`, keep the same guards, and need a daily
+  cap because the site is public. `tests/codename.test.mjs` cracks every
+  level by the route its hints teach and checks each defence blocks the
+  previous route: keep both true when changing a level. Phone layout: grid
+  children need `min-width: 0`; the e2e phone check compares
+  `scrollWidth` to 390, because `innerWidth` grows with the overflow.
 
 ## Tests
 
