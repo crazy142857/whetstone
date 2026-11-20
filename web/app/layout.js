@@ -4,7 +4,7 @@ import Logo from "@/components/Logo";
 
 export const metadata = {
   title: { default: "Whetstone", template: "%s · Whetstone" },
-  description: "Short games that keep a data team's instincts sharp.",
+  description: "Short games that keep a team's skills sharp: reading data and using AI safely.",
   icons: { icon: "/icon.svg" },
 };
 
@@ -28,6 +28,7 @@ export default function RootLayout({ children }) {
           </Link>
           <nav>
             <Link href="/">Games</Link>
+            <Link href="/field-guide">Field guide</Link>
             <Link href="/stats">My stats</Link>
           </nav>
         </header>

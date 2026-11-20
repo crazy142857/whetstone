@@ -4,7 +4,7 @@
 // outlier, per-group r, ...) is computed from the generated points, never
 // assumed from the generator's settings.
 
-import { makeRng } from "./rng.js";
+import { makeRng } from "../rng.js";
 import { pearson, spearman, quadraticFit, diffs, mean, sd } from "./stats.js";
 
 export const TRAP_KINDS = ["outlier", "simpson", "curve", "spurious"];

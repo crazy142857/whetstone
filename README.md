@@ -11,6 +11,13 @@ unrelated trending series, and curves with r near zero. Every round ends
 with a short "what just happened" explainer built from that round's own
 numbers.
 
+**AI security** games (v0.2.0), for anyone using AI at work, written as
+short training: **Spot the Injection** (find the lines in an email, page
+or document that try to give an AI assistant orders), **Leak Check** (tap
+what shouldn't go into a public chatbot) and **Gatekeeper** (allow, ask or
+block an AI agent's next action). Each round ends with what to look for
+next time, and `/field-guide` collects every lesson.
+
 ## Stack
 
 Next.js 16.4.6 (exact pin), React 19.3.1, plain JavaScript and CSS, Node 26
@@ -25,7 +32,7 @@ cd web
 npm ci
 npm run dev            # http://localhost:3008
 npm run lint
-npm test               # unit tests: stats, round generation, scoring, explainers
+npm test               # unit tests: correlation engine, AI security content and scoring
 npx next build && npx next start -p 3008 &
 npm run test:e2e       # plays a full game in Chromium, saves screenshots to web/shots/
 ```

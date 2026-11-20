@@ -6,7 +6,7 @@ import ScatterPlot, { PlotLegend, TimeSeries } from "@/components/ScatterPlot";
 import { makeRound, KIND_LABELS } from "@/lib/correlation/rounds";
 import { scoreGuess, initialState, summarize, GRADE_LABELS, START_LIVES } from "@/lib/correlation/scoring";
 import { explainRound, fmt } from "@/lib/correlation/explain";
-import { randomSeed } from "@/lib/correlation/rng";
+import { randomSeed } from "@/lib/rng";
 import { saveGame, loadGames, bestScore } from "@/lib/client/history";
 
 const clamp = (v) => Math.max(-1, Math.min(1, Math.round(v * 100) / 100));
