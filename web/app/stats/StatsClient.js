@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { loadGames } from "@/lib/client/history";
 import { KIND_LABELS } from "@/lib/correlation/rounds";
+import { LESSONS, SECURITY_GAMES } from "@/lib/security/lessons";
 
 // Average miss per round type across every saved game, weighted by rounds.
 function byKind(games) {
@@ -21,20 +22,93 @@ function byKind(games) {
     .sort((x, y) => x.avgError - y.avgError);
 }
 
-export default function StatsClient() {
-  const [games, setGames] = useState(null);
-  useEffect(() => setGames(loadGames()), []);
-  if (games === null) return null;
+// One AI security game's history: best, games, and lessons weakest first.
+function SecurityStats({ slug, games }) {
+  const best = Math.max(...games.map((g) => g.score));
+  const recent = games.slice(0, 10);
+  const lessons = {};
+  for (const g of games) {
+    for (const [id, l] of Object.entries(g.byLesson || {})) {
+      const a = (lessons[id] ||= { rounds: 0, points: 0 });
+      a.rounds += l.rounds;
+      a.points += l.points;
+    }
+  }
+  const rows = Object.entries(lessons)
+    .filter(([id]) => LESSONS[id])
+    .map(([id, l]) => ({ id, ...l, avg: l.points / l.rounds }))
+    .sort((a, b) => a.avg - b.avg);
+  return (
+    <div className="card">
+      <div className="row">
+        <h3>{SECURITY_GAMES[slug].name}</h3>
+        <Link className="faint" href={SECURITY_GAMES[slug].href}>Play</Link>
+      </div>
+      <p className="muted" style={{ margin: "4px 0 10px" }}>
+        Best <strong className="num">{best}</strong> of {games[0].maxScore} · {games.length} game{games.length > 1 ? "s" : ""} ·
+        last 10 average <span className="num">{Math.round(recent.reduce((s, g) => s + g.score, 0) / recent.length)}</span>
+      </p>
+      <table className="table">
+        <thead><tr><th>Lesson</th><th>Rounds</th><th style={{ width: "40%" }}>Average points</th></tr></thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.id}>
+              <td><Link href={`/field-guide#${r.id}`}>{LESSONS[r.id].title}</Link></td>
+              <td className="num">{r.rounds}</td>
+              <td>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div className="bar" style={{ flex: 1 }}><span style={{ width: `${r.avg}%` }} /></div>
+                  <span className="num">{Math.round(r.avg)}</span>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
-  if (games.length === 0) {
+export default function StatsClient() {
+  const [all, setAll] = useState(null);
+  useEffect(() => {
+    const out = { correlation: loadGames() };
+    for (const slug of Object.keys(SECURITY_GAMES)) out[slug] = loadGames(slug);
+    setAll(out);
+  }, []);
+  if (all === null) return null;
+
+  const security = Object.keys(SECURITY_GAMES).filter((slug) => all[slug].length > 0);
+  if (all.correlation.length === 0 && security.length === 0) {
     return (
       <div className="intro">
         <h1>My stats</h1>
         <p className="muted">No games on this device yet.</p>
-        <div><Link className="btn btn-primary" href="/correlation">Play Guess the Correlation+</Link></div>
+        <div className="actions">
+          <Link className="btn btn-primary" href="/injection">Play Spot the Injection</Link>
+          <Link className="btn" href="/correlation">Play Guess the Correlation+</Link>
+        </div>
       </div>
     );
   }
+  return (
+    <div className="intro" style={{ maxWidth: 760 }}>
+      <div>
+        <h1>My stats</h1>
+        <p className="faint" style={{ margin: "4px 0 0", fontSize: "0.85rem" }}>Saved on this device only.</p>
+      </div>
+      {security.length > 0 && (
+        <>
+          <h2 style={{ fontSize: "1.2rem", marginTop: 8 }}>AI security</h2>
+          {security.map((slug) => <SecurityStats key={slug} slug={slug} games={all[slug]} />)}
+        </>
+      )}
+      {all.correlation.length > 0 && <CorrelationStats games={all.correlation} />}
+    </div>
+  );
+}
+
+function CorrelationStats({ games }) {
 
   const best = Math.max(...games.map((g) => g.score));
   const recent = games.slice(0, 10);
@@ -44,12 +118,8 @@ export default function StatsClient() {
   const maxErr = Math.max(0.3, ...kinds.map((k) => k.avgError));
 
   return (
-    <div className="intro" style={{ maxWidth: 760 }}>
-      <div>
-        <div className="eyebrow">Guess the Correlation+</div>
-        <h1 style={{ marginTop: 4 }}>My stats</h1>
-        <p className="faint" style={{ margin: "4px 0 0", fontSize: "0.85rem" }}>Saved on this device only.</p>
-      </div>
+    <>
+      <h2 style={{ fontSize: "1.2rem", marginTop: 8 }}>Guess the Correlation+</h2>
       <div className="stats-grid">
         <div className="card stat"><div className="eyebrow">Best score</div><div className="big num">{best}</div></div>
         <div className="card stat"><div className="eyebrow">Games</div><div className="big num">{games.length}</div></div>
@@ -96,6 +166,6 @@ export default function StatsClient() {
           </tbody>
         </table>
       </div>
-    </div>
+    </>
   );
 }

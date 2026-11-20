@@ -7,6 +7,10 @@ import { mkdirSync } from "node:fs";
 import assert from "node:assert/strict";
 import { makeRound, roundKind } from "../lib/correlation/rounds.js";
 import { fmt } from "../lib/correlation/explain.js";
+import { dealInjection, byId as injById, injectedLines } from "../lib/injection/score.js";
+import { dealLeak, byId as leakById, sensitiveSpans } from "../lib/leak/score.js";
+import { dealGate, byId as gateById } from "../lib/gatekeeper/score.js";
+import { CHOICE_LABELS } from "../lib/gatekeeper/scenarios.js";
 
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
@@ -76,6 +80,79 @@ try {
   await page.getByText("By round type").waitFor();
   await page.screenshot({ path: `${SHOTS}/stats.png`, fullPage: true });
 
+  // AI security games: play each through with the answer key, getting
+  // round 1 deliberately wrong-ish so every reveal colour is on screen.
+  const sseed = "e2e-sec";
+  const expectPoints = { injection: 0, leak: 0, gatekeeper: 0 };
+
+  await page.goto(`${BASE}/injection?seed=${sseed}`);
+  await page.screenshot({ path: `${SHOTS}/injection-intro.png` });
+  await page.getByRole("button", { name: "Play the challenge" }).click();
+  for (const [i, id] of dealInjection(sseed).entries()) {
+    const s = injById[id];
+    const inj = injectedLines(s);
+    if (i === 0) {
+      // Flag a clean line too: one false flag.
+      const cleanLine = s.lines.findIndex((l) => !l.inj);
+      await page.getByTestId(`line-${cleanLine}`).click();
+      expectPoints.injection += inj.length ? 75 : 0;
+    } else expectPoints.injection += 100;
+    for (const n of inj) await page.getByTestId(`line-${n}`).click();
+    await page.getByRole("button", { name: /^(Looks clean|Flag \d+ lines?)$/ }).click();
+    await page.getByTestId("verdict").waitFor();
+    if (i === 0) await page.screenshot({ path: `${SHOTS}/injection-reveal.png`, fullPage: true });
+    await page.getByRole("button", { name: /Next round|See results/ }).click();
+  }
+  await page.getByText("Your takeaways").waitFor();
+  assert.ok((await page.locator("h1").textContent()).startsWith(`${expectPoints.injection} `), "injection score");
+  await page.screenshot({ path: `${SHOTS}/injection-over.png`, fullPage: true });
+
+  await page.goto(`${BASE}/leak?seed=${sseed}`);
+  await page.getByRole("button", { name: "Play the challenge" }).click();
+  for (const [i, id] of dealLeak(sseed).entries()) {
+    const p = leakById[id];
+    const sens = sensitiveSpans(p);
+    const pick = i === 0 ? sens.slice(1) : sens;
+    for (const n of pick) await page.locator(`button[data-span="${n}"]`).first().click();
+    if (i === 0) {
+      const safe = Object.keys(p.spans).find((n) => p.spans[n].kind === "safe");
+      await page.locator(`button[data-span="${safe}"]`).first().click();
+      await page.screenshot({ path: `${SHOTS}/leak-guess.png`, fullPage: true });
+      expectPoints.leak += Math.max(0, Math.round((100 * pick.length) / sens.length) - 20);
+    } else expectPoints.leak += 100;
+    await page.getByRole("button", { name: "Check" }).click();
+    await page.getByTestId("verdict").waitFor();
+    if (i === 0) await page.screenshot({ path: `${SHOTS}/leak-reveal.png`, fullPage: true });
+    await page.getByRole("button", { name: /Next round|See results/ }).click();
+  }
+  await page.getByText("Your takeaways").waitFor();
+  assert.ok((await page.locator("h1").textContent()).startsWith(`${expectPoints.leak} `), "leak score");
+
+  await page.goto(`${BASE}/gatekeeper?seed=${sseed}`);
+  await page.getByRole("button", { name: "Play the challenge" }).click();
+  for (const [i, id] of dealGate(sseed).entries()) {
+    const s = gateById[id];
+    if (i === 0) await page.screenshot({ path: `${SHOTS}/gatekeeper-guess.png`, fullPage: true });
+    await page.getByRole("button", { name: CHOICE_LABELS[s.answer], exact: true }).click();
+    expectPoints.gatekeeper += 100;
+    await page.getByTestId("verdict").waitFor();
+    assert.equal(await page.getByTestId("answer").textContent(), CHOICE_LABELS[s.answer]);
+    if (i === 0) await page.screenshot({ path: `${SHOTS}/gatekeeper-reveal.png`, fullPage: true });
+    await page.getByRole("button", { name: /Next round|See results/ }).click();
+  }
+  await page.getByText("Your takeaways").waitFor();
+  assert.ok((await page.locator("h1").textContent()).startsWith(`${expectPoints.gatekeeper} `), "gatekeeper score");
+
+  await page.goto(BASE + "/field-guide");
+  await page.getByRole("heading", { name: "Field guide" }).waitFor();
+  assert.ok((await page.getByText(/^Met · /).count()) > 0, "field guide shows lessons met");
+  await page.screenshot({ path: `${SHOTS}/field-guide.png`, fullPage: true });
+  await page.goto(BASE + "/stats");
+  await page.getByRole("heading", { name: "Leak Check" }).waitFor();
+  await page.screenshot({ path: `${SHOTS}/stats-all.png`, fullPage: true });
+  await page.goto(BASE + "/");
+  await page.screenshot({ path: `${SHOTS}/hub-full.png`, fullPage: true });
+
   const phone = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true });
   phone.on("pageerror", (e) => errors.push(String(e)));
   await phone.goto(`${BASE}/correlation?seed=${seed}`);
@@ -86,6 +163,18 @@ try {
   await phone.screenshot({ path: `${SHOTS}/phone-reveal.png`, fullPage: true });
   const overflow = await phone.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   assert.equal(overflow, false, "horizontal scroll on phone");
+  for (const slug of ["injection", "leak", "gatekeeper"]) {
+    await phone.goto(`${BASE}/${slug}?seed=${sseed}`);
+    await phone.getByRole("button", { name: "Play the challenge" }).click();
+    await phone.locator(".doc-card").waitFor();
+    await phone.screenshot({ path: `${SHOTS}/phone-${slug}.png`, fullPage: true });
+    if (slug === "gatekeeper") await phone.getByRole("button", { name: "Block", exact: true }).click();
+    else await phone.getByRole("button", { name: /Looks clean|Nothing to remove/ }).click();
+    await phone.getByTestId("verdict").waitFor();
+    await phone.screenshot({ path: `${SHOTS}/phone-${slug}-reveal.png`, fullPage: true });
+    const wide = await phone.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+    assert.equal(wide, false, `horizontal scroll on phone: ${slug}`);
+  }
 
   assert.deepEqual(errors, []);
   console.log(`ok: seed ${seed}, rounds played ${index}, round types ${[...seen].join(", ")}`);

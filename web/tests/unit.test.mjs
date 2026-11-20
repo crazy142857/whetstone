@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { makeRng } from "../lib/correlation/rng.js";
+import { makeRng } from "../lib/rng.js";
 import { pearson, spearman, quadraticFit, ranks } from "../lib/correlation/stats.js";
 import { makeRound, roundKind, TRAP_KINDS } from "../lib/correlation/rounds.js";
 import { scoreGuess, initialState, grade, summarize } from "../lib/correlation/scoring.js";

@@ -6,7 +6,9 @@ gotcha or fix would otherwise have to be re-explained, put it here.
 ## What this is
 
 Whetstone: browser games a small data team plays to keep sharpening data
-and AI skills. Practice, not hiring: the candidate tests are Touchstone, a
+and AI skills, and meant to work as workplace training and upskilling too
+(Ivan, 2026-11-20): plain language, realistic work scenarios, clear
+takeaways. Practice, not hiring: the candidate tests are Touchstone, a
 separate app and repo; don't share code between them. Original games only.
 `README.md` has setup and deploy, `ROADMAP.md` what's built and next.
 
@@ -22,7 +24,7 @@ separate app and repo; don't share code between them. Original games only.
   needs identity, use Access's JWT (see ROADMAP.md), not a home-made login.
 - **The hub is `lib/games.js`.** A new game is an entry there plus its own
   route under `app/`; keep its logic pure in `lib/<game>/` with unit tests.
-- **Guess the Correlation+ is seeded** (`lib/correlation/rng.js`): the same
+- **Seeded games share `lib/rng.js`.** Guess the Correlation+ is seeded: the same
   seed and round number always give the same round, which challenge links
   rely on (and a daily puzzle will). Don't use `Math.random()` inside round
   generation. Round kinds come from `roundKind` (3 plain rounds, then traps
@@ -34,6 +36,20 @@ separate app and repo; don't share code between them. Original games only.
   opposite sign to the pooled r), so keep those checks when changing one.
 - **Before the guess a trap looks like any other round**: overlays (fit
   lines, group colours, the outlier ring) only appear on reveal.
+- **AI security games (v0.2.0): Spot the Injection, Leak Check,
+  Gatekeeper.** Hand-written scenarios (`lib/injection/scenarios.js`,
+  `lib/leak/prompts.js`, `lib/gatekeeper/scenarios.js`), 8 per game dealt
+  from the seed by `lib/security/deck.js`'s `dealDeck` (challenge links
+  work the same way). They share `components/DeckGame.js` (intro, HUD,
+  game over with takeaways, challenge link); each game supplies a `Round`
+  component. Every scenario names one lesson in `lib/security/lessons.js`,
+  which is also the `/field-guide` page; the unit tests check every lesson
+  is taught by at least one scenario. New scenario: write it in the same
+  plain, work-based voice, made-up names only, and don't use fake keys in
+  a real provider's format (GitHub push protection would block the push).
+  Leak Check prompts mark spans as `[[n|text]]`; each word is clickable
+  so a span's boundaries aren't given away. History is per game in
+  localStorage (`whetstone:<slug>:games`).
 
 ## Tests
 
