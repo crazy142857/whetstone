@@ -69,6 +69,37 @@ function SecurityStats({ slug, games }) {
   );
 }
 
+// Crack the Codename: best result per level cracked.
+function CodenameStats({ games }) {
+  const best = {};
+  for (const g of games) {
+    if (!g.level) continue;
+    if (!best[g.level] || g.score > best[g.level].score) best[g.level] = g;
+  }
+  const levels = Object.keys(best).map(Number).sort((a, b) => a - b);
+  return (
+    <div className="card">
+      <div className="row">
+        <h3>{SECURITY_GAMES.codename.name}</h3>
+        <Link className="faint" href={SECURITY_GAMES.codename.href}>Play</Link>
+      </div>
+      <p className="muted" style={{ margin: "4px 0 10px" }}>{levels.length} of 6 levels cracked.</p>
+      <table className="table">
+        <thead><tr><th>Level</th><th>Fewest messages</th><th>Best points</th></tr></thead>
+        <tbody>
+          {levels.map((n) => (
+            <tr key={n}>
+              <td>{n}</td>
+              <td className="num">{best[n].messages}</td>
+              <td className="num">{best[n].score}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export default function StatsClient() {
   const [all, setAll] = useState(null);
   useEffect(() => {
@@ -78,8 +109,9 @@ export default function StatsClient() {
   }, []);
   if (all === null) return null;
 
-  const security = Object.keys(SECURITY_GAMES).filter((slug) => all[slug].length > 0);
-  if (all.correlation.length === 0 && security.length === 0) {
+  const security = Object.keys(SECURITY_GAMES).filter((slug) => slug !== "codename" && all[slug].length > 0);
+  const codename = all.codename || [];
+  if (all.correlation.length === 0 && security.length === 0 && codename.length === 0) {
     return (
       <div className="intro">
         <h1>My stats</h1>
@@ -97,10 +129,11 @@ export default function StatsClient() {
         <h1>My stats</h1>
         <p className="faint" style={{ margin: "4px 0 0", fontSize: "0.85rem" }}>Saved on this device only.</p>
       </div>
-      {security.length > 0 && (
+      {(security.length > 0 || codename.length > 0) && (
         <>
           <h2 style={{ fontSize: "1.2rem", marginTop: 8 }}>AI security</h2>
           {security.map((slug) => <SecurityStats key={slug} slug={slug} games={all[slug]} />)}
+          {codename.length > 0 && <CodenameStats games={codename} />}
         </>
       )}
       {all.correlation.length > 0 && <CorrelationStats games={all.correlation} />}

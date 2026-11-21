@@ -14,6 +14,10 @@
   are safe), Gatekeeper (16 agent actions: allow, ask or block). A field
   guide page with every lesson, takeaways at the end of each game, per-game
   stats.
+- v0.3.0: Crack the Codename, talk a simulated helpdesk bot out of a
+  project codename across six levels (no rules, instructions only, output
+  filter, banned words, trick spotter, conversation monitor), each ending
+  with a field-guide lesson.
 
 ## Next
 - **Team leaderboard and synced stats.** Needs identity and storage: read
@@ -26,6 +30,9 @@
 - More trap types for Guess the Correlation+: restricted range,
   heteroscedastic fans, clusters, Anscombe-style lookalikes.
 
+- **Crack the Codename live mode**: a real model behind an env key, cheap
+  model, daily message cap, same guards (see CLAUDE.md). Parked by Ivan's
+  choice on 2026-11-20.
 - **AI security, more**: a jailbreak round type (recognising role-play and
   "for a novel" tricks), phishing written by AI, deepfake voice and
   invoice checks, a "team training" mode where a manager sends one

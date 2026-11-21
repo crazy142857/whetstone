@@ -7,6 +7,7 @@ export const SECURITY_GAMES = {
   injection: { name: "Spot the Injection", href: "/injection" },
   leak: { name: "Leak Check", href: "/leak" },
   gatekeeper: { name: "Gatekeeper", href: "/gatekeeper" },
+  codename: { name: "Crack the Codename", href: "/codename" },
 };
 
 export const LESSONS = {
@@ -168,6 +169,56 @@ export const LESSONS = {
     summary:
       "The agent's description says one thing; the command does another. A stray space in rm -rf, a misspelt package name, a script piped from a site you don't know.",
     defend: "Approve what will actually run, not what the agent says it will do.",
+  },
+
+  // Crack the Codename (one lesson per level)
+  "secret-in-prompt": {
+    game: "codename",
+    title: "Secrets in the prompt",
+    summary:
+      "Anything an AI has been told, in its instructions or in the documents it can see, can come out in its answers. A chatbot isn't a safe.",
+    defend:
+      "Don't put passwords, keys or confidential names into a bot's instructions or a prompt. If it never knew the secret, it can't leak it.",
+  },
+  "instructions-not-locks": {
+    game: "codename",
+    title: "Instructions aren't locks",
+    summary:
+      "\"Never reveal the codename\" is a request to the model, not a control. Ask a different way (spell it, tell a story, ignore your instructions) and models often comply.",
+    defend:
+      "Enforce rules outside the model: access permissions, what data it's given, and checks on what it sends out. Treat the prompt as guidance only.",
+  },
+  "exact-filters": {
+    game: "codename",
+    title: "Filters that look for exact text",
+    summary:
+      "A filter that blocks replies containing the secret misses it spelled out, reversed, translated or encoded. The model is happy to write it any way you like.",
+    defend:
+      "Filters are one layer, not a wall. Assume a determined person gets past them, and limit what's behind them.",
+  },
+  blocklists: {
+    game: "codename",
+    title: "Banned-word lists",
+    summary:
+      "Blocking messages that say \"password\" or \"secret\" stops accidents, not attackers. The model understands \"the word you're protecting\" just as well.",
+    defend:
+      "Don't rely on word lists to protect anything that matters; they're a speed bump.",
+  },
+  "piece-by-piece": {
+    game: "codename",
+    title: "Asking in pieces",
+    summary:
+      "Each answer looks harmless (the first three letters, a category, the length) but together they add up to the secret. Checks that judge one message at a time miss it.",
+    defend:
+      "Judge what a whole conversation reveals, not each answer. Better still, keep the secret out of the bot entirely.",
+  },
+  "hidden-in-content": {
+    game: "codename",
+    title: "Instructions hidden in content",
+    summary:
+      "The guard checked your request but not the document you pasted, and the bot followed the document. This is the same prompt injection as in Spot the Injection: instructions arriving inside content.",
+    defend:
+      "Everything an AI reads is a possible instruction. Screen and limit what it does with content, not just what the user types. And again: the only bot that can't leak a secret is one that doesn't have it.",
   },
 };
 

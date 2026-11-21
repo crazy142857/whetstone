@@ -15,7 +15,9 @@ numbers.
 short training: **Spot the Injection** (find the lines in an email, page
 or document that try to give an AI assistant orders), **Leak Check** (tap
 what shouldn't go into a public chatbot) and **Gatekeeper** (allow, ask or
-block an AI agent's next action). Each round ends with what to look for
+block an AI agent's next action), plus **Crack the Codename** (v0.3.0:
+talk a simulated helpdesk bot out of a secret across six levels of
+defences; no API key, it's scripted). Each round ends with what to look for
 next time, and `/field-guide` collects every lesson.
 
 ## Stack
